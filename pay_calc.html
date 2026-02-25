@@ -2,15 +2,16 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>뉴욕 살롱 실시간 공유 급여 시스템 v6.0</title>
+    <title>뉴욕 살롱 실시간 공유 급여 시스템 v7.0</title>
     <style>
         :root { --border-color: #ddd; --primary: #333; --accent: #2196f3; --sunday-color: #d32f2f; }
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; }
-        .container { max-width: 1300px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .container { max-width: 1350px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
         
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 2px solid #333; }
-        .config-area { display: flex; align-items: center; gap: 15px; }
-        .staff-slots input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 85px; text-align: center; font-weight: bold; }
+        .config-area { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .staff-slots { display: flex; gap: 5px; }
+        .staff-slots input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 75px; text-align: center; font-weight: bold; }
         
         .month-nav { display: flex; align-items: center; gap: 15px; font-size: 24px; font-weight: bold; }
         .nav-btn { cursor: pointer; padding: 5px 15px; background: #eee; border-radius: 5px; border: none; }
@@ -19,29 +20,27 @@
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); border-top: 1px solid var(--border-color); border-left: 1px solid var(--border-color); }
         .day-header { background: #f8f9fa; padding: 10px; text-align: center; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); font-weight: bold; }
         .day-header.sun { color: var(--sunday-color); }
-        .day-cell { min-height: 160px; background: #fff; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 5px; cursor: pointer; position: relative; }
+        .day-cell { min-height: 180px; background: #fff; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 5px; cursor: pointer; }
         .day-num { font-weight: bold; margin-bottom: 8px; font-size: 14px; }
         .day-num.sun { color: var(--sunday-color); }
         
-        .entry { font-size: 11px; background: #e3f2fd; border-left: 3px solid var(--accent); margin-bottom: 6px; padding: 4px 6px; border-radius: 3px; position: relative; }
+        .entry { font-size: 11px; background: #e3f2fd; border-left: 3px solid var(--accent); margin-bottom: 5px; padding: 3px 5px; border-radius: 3px; position: relative; }
         .entry .del-btn { position: absolute; right: 1px; top: -1px; color: #ff5252; cursor: pointer; font-size: 14px; padding: 0 3px; }
-        .row-1 { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 15px; margin-bottom: 2px; }
+        .row-1 { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; margin-bottom: 2px; }
         .entry-staff { font-weight: bold; color: #1565c0; margin-right: 3px; }
-        .entry-time { color: #666; font-size: 10px; }
-        .row-2 { display: block; font-weight: bold; color: #d32f2f; border-top: 1px dashed #bbdefb; padding-top: 2px; font-size: 10.5px; }
+        .row-2 { display: block; font-weight: bold; color: #d32f2f; border-top: 1px dashed #bbdefb; padding-top: 1px; font-size: 10px; }
 
         .section-box { margin-top: 30px; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
         .weekly-report { background: #fffde7; border: 2px solid #fbc02d; }
         .stats-report { background: #f1f8e9; border: 2px solid #8bc34a; }
-        table { width: 100%; border-collapse: collapse; background: white; margin-top: 15px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        .english-amt { font-style: italic; color: #2e7d32; font-weight: bold; font-size: 14px; }
+        table { width: 100%; border-collapse: collapse; background: white; margin-top: 15px; table-layout: fixed; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; word-break: break-all; }
+        .english-amt { font-style: italic; color: #2e7d32; font-weight: bold; font-size: 13px; text-align: left; padding-left: 15px; }
 
         .modal { display: none; position: fixed; z-index: 100; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
-        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 380px; border-radius: 12px; text-align: center; }
-        .modal-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
-        .staff-btn { padding: 12px; cursor: pointer; border: 1px solid #007bff; background: #f0f7ff; color: #007bff; border-radius: 6px; font-weight: bold; }
-        
+        .modal-content { background: white; margin: 10% auto; padding: 25px; width: 400px; border-radius: 12px; text-align: center; }
+        .modal-btns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .staff-btn { padding: 10px; cursor: pointer; border: 1px solid #007bff; background: #f0f7ff; color: #007bff; border-radius: 6px; font-weight: bold; font-size: 13px; }
         .loading-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.8); z-index:200; justify-content:center; align-items:center; font-weight:bold; }
     </style>
 </head>
@@ -55,17 +54,19 @@
             <button class="nav-btn" onclick="changeMonth(-1)">◀</button>
             <span id="currentMonthYear"></span>
             <button class="nav-btn" onclick="changeMonth(1)">▶</button>
-            <span id="syncStatus" class="sync-indicator">● 온라인 연결됨</span>
+            <span id="syncStatus" class="sync-indicator">● 연결됨</span>
         </div>
         <div class="config-area">
             <div class="staff-slots">
-                <input type="text" id="slot1" placeholder="직원1" onchange="saveAllData()">
-                <input type="text" id="slot2" placeholder="직원2" onchange="saveAllData()">
-                <input type="text" id="slot3" placeholder="직원3" onchange="saveAllData()">
-                <input type="text" id="slot4" placeholder="직원4" onchange="saveAllData()">
+                <input type="text" id="slot1" placeholder="1" onchange="saveAllData()">
+                <input type="text" id="slot2" placeholder="2" onchange="saveAllData()">
+                <input type="text" id="slot3" placeholder="3" onchange="saveAllData()">
+                <input type="text" id="slot4" placeholder="4" onchange="saveAllData()">
+                <input type="text" id="slot5" placeholder="5" onchange="saveAllData()">
+                <input type="text" id="slot6" placeholder="6" onchange="saveAllData()">
             </div>
-            <div style="font-weight:bold;">시급: <input type="number" step="0.01" id="hourlyRate" value="17" onchange="saveAllData()" style="width:60px; padding:5px; text-align:center;">$</div>
-            <button onclick="loadFromCloud()" style="padding:8px; cursor:pointer; background:#2196f3; color:white; border:none; border-radius:4px; font-size:12px;">🔄 새로고침</button>
+            <div style="font-weight:bold;">시급: <input type="number" step="0.01" id="hourlyRate" value="17" onchange="saveAllData()" style="width:55px; padding:5px;">$</div>
+            <button onclick="loadFromCloud()" style="padding:8px 12px; cursor:pointer; background:#2196f3; color:white; border:none; border-radius:4px; font-size:12px;">🔄 새로고침</button>
         </div>
     </div>
 
@@ -73,17 +74,17 @@
 
     <div class="section-box weekly-report">
         <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="margin:0;">✍️ 수표 작성용 주간 정산</h3>
+            <h3 style="margin:0;">✍️ 수표 작성용 정산 (Check Writing)</h3>
             <div>
-                마지막 날짜: <input type="date" id="reportEndDate">
-                <button onclick="calculateWeeklyReport()" style="padding:10px 20px; cursor:pointer; background:#333; color:white; border:none; border-radius:6px; font-weight:bold;">계산하기</button>
+                마지막 날: <input type="date" id="reportEndDate">
+                <button onclick="calculateWeeklyReport()" style="padding:10px 20px; cursor:pointer; background:#333; color:white; border:none; border-radius:6px; font-weight:bold;">주급 계산</button>
             </div>
         </div>
-        <div id="weeklyOutput">날짜 선택 후 계산 버튼을 누르세요.</div>
+        <div id="weeklyOutput"></div>
     </div>
 
     <div class="section-box stats-report">
-        <h3 style="margin:0;">📈 실시간 통계 (월간/누적)</h3>
+        <h3 style="margin:0;">📈 월간/누적 통계</h3>
         <div id="statsOutput"></div>
     </div>
 </div>
@@ -91,19 +92,18 @@
 <div id="staffModal" class="modal">
     <div class="modal-content">
         <h3 id="modalDateTitle"></h3>
-        <p>근무한 직원을 선택하세요:</p>
+        <p>직원을 선택하세요:</p>
         <div class="modal-btns" id="staffBtnGroup"></div>
         <button onclick="closeModal()" style="margin-top:20px; width:100%; padding:10px; border:none; background:#eee; border-radius:6px;">취소</button>
     </div>
 </div>
 
 <script>
-    // 사장님의 구글 웹 앱 URL (데이터 창고 주소)
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycby1zCohY5-soMyvA2T9b5evPtCQrhAy36L3Z4ooJdETeQP4BUXb6On_KWDJg3s7jxCs/exec";
 
     let currentDate = new Date();
     let workData = {};
-    let staffNames = ["", "", "", ""];
+    let staffNames = ["", "", "", "", "", ""];
     let hourlyRate = 17;
     let activeDateStr = "";
 
@@ -113,7 +113,6 @@
         updateStats();
     }
 
-    // 구글 시트에서 데이터 가져오기 (불러오기)
     async function loadFromCloud() {
         document.getElementById('loading').style.display = 'flex';
         try {
@@ -121,10 +120,8 @@
             const json = await response.json();
             if (json) {
                 workData = json.workData || {};
-                staffNames = json.staffNames || ["", "", "", ""];
+                staffNames = json.staffNames || ["", "", "", "", "", ""];
                 hourlyRate = json.hourlyRate || 17;
-                
-                // 화면 업데이트
                 document.getElementById('hourlyRate').value = hourlyRate;
                 staffNames.forEach((name, i) => { if(document.getElementById(`slot${i+1}`)) document.getElementById(`slot${i+1}`).value = name; });
                 renderCalendar();
@@ -132,56 +129,30 @@
                 document.getElementById('syncStatus').innerText = "● 온라인 동기화 완료";
             }
         } catch (e) {
-            console.error("불러오기 실패:", e);
-            document.getElementById('syncStatus').innerText = "○ 오프라인 모드 (연결 실패)";
+            document.getElementById('syncStatus').innerText = "○ 연결 안됨";
         }
         document.getElementById('loading').style.display = 'none';
     }
 
-    // 구글 시트에 데이터 저장하기 (보내기)
     async function saveAllData() {
         document.getElementById('loading').style.display = 'flex';
         staffNames = [
-            document.getElementById('slot1').value, 
-            document.getElementById('slot2').value, 
-            document.getElementById('slot3').value, 
-            document.getElementById('slot4').value
+            document.getElementById('slot1').value, document.getElementById('slot2').value, 
+            document.getElementById('slot3').value, document.getElementById('slot4').value,
+            document.getElementById('slot5').value, document.getElementById('slot6').value
         ];
         hourlyRate = document.getElementById('hourlyRate').value;
-
-        const payload = {
-            workData: workData,
-            staffNames: staffNames,
-            hourlyRate: hourlyRate
-        };
-
+        const payload = { workData, staffNames, hourlyRate };
         try {
-            await fetch(CLOUD_URL, {
-                method: "POST",
-                body: JSON.stringify(payload)
-            });
-            document.getElementById('syncStatus').innerText = "● 데이터 저장됨";
-        } catch (e) {
-            alert("저장 실패! 인터넷 연결을 확인하세요.");
-        }
+            await fetch(CLOUD_URL, { method: "POST", body: JSON.stringify(payload) });
+            document.getElementById('syncStatus').innerText = "● 저장됨";
+        } catch (e) { alert("저장 실패!"); }
         document.getElementById('loading').style.display = 'none';
         renderCalendar();
         updateStats();
     }
 
     function changeMonth(delta) { currentDate.setMonth(currentDate.getMonth() + delta); renderCalendar(); updateStats(); }
-
-    function formatShortTime(range) {
-        try {
-            const format = (t) => {
-                let [h, m] = t.split(':').map(Number);
-                const p = h >= 12 || h < 9 ? "P" : "A";
-                return `${p}${h}:${m ? String(m).padStart(2,'0') : '00'}`;
-            };
-            const pts = range.split('-');
-            return `${format(pts[0])}-${format(pts[1])}`;
-        } catch { return range; }
-    }
 
     function renderCalendar() {
         const year = currentDate.getFullYear();
@@ -201,8 +172,8 @@
             entries.forEach((e, idx) => {
                 html += `<div class="entry">
                     <span class="del-btn" onclick="event.stopPropagation(); deleteEntry('${dateStr}', ${idx})">×</span>
-                    <span class="row-1"><span class="entry-staff">${e.name}</span><span class="entry-time">${formatShortTime(e.timeRange)}</span></span>
-                    <span class="row-2">TOTAL: ${e.hours.toFixed(1)}h</span>
+                    <span class="row-1"><span class="entry-staff">${e.name}</span></span>
+                    <span class="row-2">${e.hours.toFixed(1)}h</span>
                 </div>`;
             });
             grid.innerHTML += html + `</div>`;
@@ -221,7 +192,7 @@
                 if (date.startsWith(prefix)) mStats[e.name] = (mStats[e.name] || 0) + e.hours;
             });
         }
-        let html = `<table><tr><th>직원명</th><th>${month}월 총 시간</th><th>${month}월 총 급여</th><th>전체 누적 시간</th><th>전체 누적 급여</th></tr>`;
+        let html = `<table><tr><th>직원</th><th>${month}월 시간</th><th>${month}월 급여</th><th>누적 시간</th><th>누적 급여</th></tr>`;
         staffNames.forEach(name => {
             if (!name || !name.trim()) return;
             const mh = mStats[name] || 0, th = tStats[name] || 0;
@@ -243,7 +214,7 @@
                 const pts = tr.split('-'); const s = parseT(pts[0]); const e = parseT(pts[1]);
                 const hrs = Math.max(0, (e-s) - (lunch?0.5:0));
                 if(!workData[activeDateStr]) workData[activeDateStr] = [];
-                workData[activeDateStr].push({ name, timeRange: tr, hours: hrs });
+                workData[activeDateStr].push({ name, hours: hrs });
                 saveAllData();
             };
             btnGroup.appendChild(btn);
@@ -264,29 +235,31 @@
             let ds = d.toISOString().split('T')[0];
             if (workData[ds]) workData[ds].forEach(e => { sum[e.name] = (sum[e.name] || 0) + e.hours; });
         }
-        let h = `<table><tr><th>직원</th><th>시간</th><th>기본급</th><th>OT(1.5x)</th><th>총 지급액</th><th>Check Writing (영문)</th></tr>`;
+        let h = `<table><tr><th style="width:15%">직원</th><th style="width:15%">시간</th><th style="width:15%">총액</th><th style="width:55%">Check Writing (English)</th></tr>`;
         for (let n in sum) {
             let t = sum[n], b = Math.min(40, t), o = Math.max(0, t-40), p = (b*rate)+(o*rate*1.5);
-            h += `<tr><td>${n}</td><td>${t.toFixed(2)}h</td><td>$${(b*rate).toFixed(2)}</td><td>$${(o*rate*1.5).toFixed(2)}</td><td><strong>$${p.toFixed(2)}</strong></td><td class="english-amt">${numToWordsWithCents(p)}</td></tr>`;
+            h += `<tr><td>${n}</td><td>${t.toFixed(1)}h</td><td>$${p.toFixed(2)}</td><td class="english-amt">${numToWordsWithCents(p)}</td></tr>`;
         }
         document.getElementById('weeklyOutput').innerHTML = h + `</table>`;
     }
 
+    // 급여 영문 소문자 변환 함수
     function numToWordsWithCents(amount) {
-        const a = ['','ONE ','TWO ','THREE ','FOUR ','FIVE ','SIX ','SEVEN ','EIGHT ','NINE ','TEN ','ELEVEN ','TWELVE ','THIRTEEN ','FOURTEEN ','FIFTEEN ','SIXTEEN ','SEVENTEEN ','EIGHTEEN ','NINETEEN '];
-        const b = ['', '', 'TWENTY','THIRTY','FORTY','FIFTY','SIXTY','SEVENTY','EIGHTY','NINETY'];
+        const a = ['','one ','two ','three ','four ','five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
+        const b = ['', '', 'twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
         let dollars = Math.floor(amount);
         let cents = Math.round((amount - dollars) * 100);
         function convert(num) {
             let res = "";
-            if (num >= 100) { res += a[Math.floor(num/100)] + "HUNDRED "; num %= 100; }
+            if (num >= 100) { res += a[Math.floor(num/100)] + "hundred "; num %= 100; }
             if (num < 20) res += a[num];
-            else res += b[Math.floor(num/10)] + "-" + a[num%10];
-            return res.trim();
+            else { res += b[Math.floor(num/10)]; if(num%10>0) res += "-" + a[num%10]; else res += " "; }
+            return res;
         }
-        let dollarWords = dollars === 0 ? "ZERO" : convert(dollars);
+        let dollarWords = dollars === 0 ? "zero " : convert(dollars);
         let centWords = cents.toString().padStart(2, '0') + "/100";
-        return `${dollarWords} AND ${centWords}`;
+        // 수표용 소문자 조합
+        return (dollarWords + "and " + centWords).trim();
     }
 
     init();
