@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>뉴욕 살롱 실시간 공유 급여 시스템 v7.0</title>
+    <title>뉴욕 살롱 급여 관리 시스템 v8.1</title>
     <style>
         :root { --border-color: #ddd; --primary: #333; --accent: #2196f3; --sunday-color: #d32f2f; }
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #f0f2f5; padding: 20px; }
@@ -20,14 +20,16 @@
         .day-cell { min-height: 180px; background: #fff; border-right: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); padding: 5px; cursor: pointer; }
         .day-num { font-weight: bold; margin-bottom: 8px; font-size: 14px; }
         .day-num.sun { color: var(--sunday-color); }
-        .entry { font-size: 11px; background: #e3f2fd; border-left: 3px solid var(--accent); margin-bottom: 5px; padding: 3px 5px; border-radius: 3px; position: relative; }
+        
+        /* 상세 시간 표시 복구 */
+        .entry { font-size: 11px; background: #e3f2fd; border-left: 3px solid var(--accent); margin-bottom: 6px; padding: 4px; border-radius: 3px; position: relative; }
         .entry .del-btn { position: absolute; right: 1px; top: -1px; color: #ff5252; cursor: pointer; font-size: 14px; padding: 0 3px; }
-        .row-1 { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 12px; margin-bottom: 2px; }
-        .entry-staff { font-weight: bold; color: #1565c0; margin-right: 3px; }
-        .row-2 { display: block; font-weight: bold; color: #d32f2f; border-top: 1px dashed #bbdefb; padding-top: 1px; font-size: 10px; }
+        .row-1 { display: block; font-weight: bold; color: #1565c0; margin-bottom: 2px; }
+        .row-2 { display: block; font-size: 10px; color: #666; font-style: italic; }
+        .row-3 { display: block; font-weight: bold; color: #d32f2f; border-top: 1px dashed #bbdefb; padding-top: 1px; margin-top: 2px; }
+
         .section-box { margin-top: 30px; padding: 20px; border-radius: 10px; border: 1px solid #ddd; }
         .weekly-report { background: #fffde7; border: 2px solid #fbc02d; }
-        .stats-report { background: #f1f8e9; border: 2px solid #8bc34a; }
         table { width: 100%; border-collapse: collapse; background: white; margin-top: 15px; table-layout: fixed; }
         th, td { border: 1px solid #ccc; padding: 10px; text-align: center; word-break: break-all; }
         .english-amt { font-style: italic; color: #2e7d32; font-weight: bold; font-size: 13px; text-align: left; padding-left: 15px; }
@@ -69,14 +71,19 @@
         </div>
         <div id="weeklyOutput"></div>
     </div>
-    <div class="section-box stats-report"><h3>📈 월간/누적 통계</h3><div id="statsOutput"></div></div>
 </div>
+
 <div id="staffModal" class="modal"><div class="modal-content"><h3 id="modalDateTitle"></h3><p>직원을 선택하세요:</p><div class="modal-btns" id="staffBtnGroup"></div><button onclick="closeModal()" style="margin-top:20px; width:100%; padding:10px; border:none; background:#eee; border-radius:6px;">취소</button></div></div>
+
 <script>
+    // 사장님의 고유 주소를 다시 넣었습니다.
     const CLOUD_URL = "https://script.google.com/macros/s/AKfycby1zCohY5-soMyvA2T9b5evPtCQrhAy36L3Z4ooJdETeQP4BUXb6On_KWDJg3s7jxCs/exec";
+
     let currentDate = new Date();
     let workData = {}; let staffNames = ["", "", "", "", "", ""]; let hourlyRate = 17;
-    async function init() { await loadFromCloud(); renderCalendar(); updateStats(); }
+
+    async function init() { await loadFromCloud(); renderCalendar(); }
+    
     async function loadFromCloud() {
         document.getElementById('loading').style.display = 'flex';
         try {
@@ -85,20 +92,23 @@
                 workData = json.workData || {}; staffNames = json.staffNames || ["", "", "", "", "", ""]; hourlyRate = json.hourlyRate || 17;
                 document.getElementById('hourlyRate').value = hourlyRate;
                 staffNames.forEach((name, i) => { if(document.getElementById(`slot${i+1}`)) document.getElementById(`slot${i+1}`).value = name; });
-                renderCalendar(); updateStats(); document.getElementById('syncStatus').innerText = "● 온라인 동기화 완료";
+                renderCalendar(); document.getElementById('syncStatus').innerText = "● 온라인 동기화 완료";
             }
         } catch (e) { document.getElementById('syncStatus').innerText = "○ 연결 안됨"; }
         document.getElementById('loading').style.display = 'none';
     }
+
     async function saveAllData() {
         document.getElementById('loading').style.display = 'flex';
         staffNames = [document.getElementById('slot1').value, document.getElementById('slot2').value, document.getElementById('slot3').value, document.getElementById('slot4').value, document.getElementById('slot5').value, document.getElementById('slot6').value];
         hourlyRate = document.getElementById('hourlyRate').value;
         const payload = { workData, staffNames, hourlyRate };
         try { await fetch(CLOUD_URL, { method: "POST", body: JSON.stringify(payload) }); document.getElementById('syncStatus').innerText = "● 저장됨"; } catch (e) { alert("저장 실패!"); }
-        document.getElementById('loading').style.display = 'none'; renderCalendar(); updateStats();
+        document.getElementById('loading').style.display = 'none'; renderCalendar();
     }
-    function changeMonth(delta) { currentDate.setMonth(currentDate.getMonth() + delta); renderCalendar(); updateStats(); }
+
+    function changeMonth(delta) { currentDate.setMonth(currentDate.getMonth() + delta); renderCalendar(); }
+    
     function renderCalendar() {
         const year = currentDate.getFullYear(); const month = currentDate.getMonth();
         document.getElementById('currentMonthYear').innerText = `${year}년 ${month + 1}월`;
@@ -111,19 +121,18 @@
             const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
             const entries = workData[dateStr] || []; const isSun = new Date(year, month, d).getDay() === 0;
             let html = `<div class="day-cell" onclick="openStaffModal('${dateStr}')"><div class="day-num ${isSun?'sun':''}">${d}</div>`;
-            entries.forEach((e, idx) => { html += `<div class="entry"><span class="del-btn" onclick="event.stopPropagation(); deleteEntry('${dateStr}', ${idx})">×</span><span class="row-1"><span class="entry-staff">${e.name}</span></span><span class="row-2">${e.hours.toFixed(1)}h</span></div>`; });
+            entries.forEach((e, idx) => { 
+                html += `<div class="entry">
+                    <span class="del-btn" onclick="event.stopPropagation(); deleteEntry('${dateStr}', ${idx})">×</span>
+                    <span class="row-1">${e.name}</span>
+                    <span class="row-2">${e.timeRange || ''}</span>
+                    <span class="row-3">${e.hours.toFixed(1)}h</span>
+                </div>`; 
+            });
             grid.innerHTML += html + `</div>`;
         }
     }
-    function updateStats() {
-        const year = currentDate.getFullYear(); const month = currentDate.getMonth() + 1;
-        const prefix = `${year}-${String(month).padStart(2,'0')}`; const rate = parseFloat(hourlyRate);
-        let mStats = {}, tStats = {};
-        for (let date in workData) { workData[date].forEach(e => { tStats[e.name] = (tStats[e.name] || 0) + e.hours; if (date.startsWith(prefix)) mStats[e.name] = (mStats[e.name] || 0) + e.hours; }); }
-        let html = `<table><tr><th>직원</th><th>${month}월 시간</th><th>${month}월 급여</th><th>누적 시간</th><th>누적 급여</th></tr>`;
-        staffNames.forEach(name => { if (!name || !name.trim()) return; const mh = mStats[name] || 0, th = tStats[name] || 0; html += `<tr><td><strong>${name}</strong></td><td>${mh.toFixed(2)}h</td><td>$ ${(mh * rate).toLocaleString()}</td><td>${th.toFixed(2)}h</td><td>$ ${(th * rate).toLocaleString()}</td></tr>`; });
-        document.getElementById('statsOutput').innerHTML = html + `</table>`;
-    }
+
     function openStaffModal(dateStr) {
         activeDateStr = dateStr; document.getElementById('modalDateTitle').innerText = dateStr;
         const btnGroup = document.getElementById('staffBtnGroup'); btnGroup.innerHTML = "";
@@ -133,16 +142,20 @@
             btn.onclick = () => {
                 closeModal(); const tr = prompt(`${name} 시간 (예: 10-6:30):`, "10-6:30"); if(!tr) return;
                 const lunch = confirm("점심(30분) 차감?"); const pts = tr.split('-'); const s = parseT(pts[0]); const e = parseT(pts[1]);
-                const hrs = Math.max(0, (e-s) - (lunch?0.5:0)); if(!workData[activeDateStr]) workData[activeDateStr] = [];
-                workData[activeDateStr].push({ name, hours: hrs }); saveAllData();
+                const hrs = Math.max(0, (e-s) - (lunch?0.5:0));
+                if(!workData[activeDateStr]) workData[activeDateStr] = [];
+                workData[activeDateStr].push({ name, hours: hrs, timeRange: tr });
+                saveAllData();
             };
             btnGroup.appendChild(btn);
         });
         document.getElementById('staffModal').style.display = 'block';
     }
+
     function parseT(t) { let [h, m] = t.split(':').map(Number); if(h<9) h+=12; return h+(m||0)/60; }
     function closeModal() { document.getElementById('staffModal').style.display = 'none'; }
     function deleteEntry(d, i) { workData[d].splice(i, 1); saveAllData(); }
+
     function calculateWeeklyReport() {
         const endStr = document.getElementById('reportEndDate').value; if (!endStr) return alert("날짜 선택!");
         let end = new Date(endStr + "T12:00:00"); let sum = {}; const rate = parseFloat(hourlyRate);
@@ -151,6 +164,7 @@
         for (let n in sum) { let t = sum[n], b = Math.min(40, t), o = Math.max(0, t-40), p = (b*rate)+(o*rate*1.5); h += `<tr><td>${n}</td><td>${t.toFixed(1)}h</td><td>$${p.toFixed(2)}</td><td class="english-amt">${numToWordsWithCents(p)}</td></tr>`; }
         document.getElementById('weeklyOutput').innerHTML = h + `</table>`;
     }
+
     function numToWordsWithCents(amount) {
         const a = ['','one ','two ','three ','four ','five ','six ','seven ','eight ','nine ','ten ','eleven ','twelve ','thirteen ','fourteen ','fifteen ','sixteen ','seventeen ','eighteen ','nineteen '];
         const b = ['', '', 'twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
